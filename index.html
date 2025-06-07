@@ -8,88 +8,103 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black">
     <meta name="apple-mobile-web-app-title" content="NDタイマー">
     <link rel="manifest" href="manifest.json">
-    <link rel="apple-touch-icon" href="icon-192x192.png"> <style>
+    <link rel="apple-touch-icon" href="icon-192x192.png">
+
+    <style>
         :root { --accent-color: #007bff; --success-color: #28a745; --danger-color: #dc3545; }
+        html, body { height: 100%; }
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            line-height: 1.6; color: #333; background-color: #f4f4f4; margin: 0; padding: 20px; box-sizing: border-box;
+            line-height: 1.5; color: #333; background-color: #f0f2f5; margin: 0;
+            display: flex; justify-content: center; align-items: center; padding: 10px; box-sizing: border-box;
         }
-        .container { background: #fff; padding: 25px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 100%; max-width: 450px; margin: 0 auto; }
-        h1 { text-align: center; color: #1a1a1a; margin-bottom: 25px; font-size: 1.6em; }
-        .input-group { margin-bottom: 20px; }
-        label { display: block; margin-bottom: 8px; font-weight: bold; color: #555; }
-        input[type="text"], select { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 5px; font-size: 1.1em; box-sizing: border-box; }
-        .result-section, .timer-section { margin-top: 25px; padding-top: 20px; border-top: 1px solid #eee; }
-        .result-title { font-weight: bold; font-size: 1.2em; color: #1a1a1a; }
-        #result-speed { font-size: 2em; font-weight: bold; color: var(--accent-color); text-align: center; margin: 10px 0; min-height: 48px; }
-        .timer-section { text-align: center; }
-        #timer-display { font-size: 3.5em; font-weight: bold; color: var(--success-color); margin-bottom: 15px; letter-spacing: 2px; }
-        .timer-settings { margin-bottom: 15px; }
-        .timer-settings label { display: inline-flex; align-items: center; cursor: pointer; font-weight: normal; }
-        .timer-controls button { padding: 12px 20px; font-size: 1.1em; margin: 5px; cursor: pointer; border-radius: 8px; border: none; color: white; transition: opacity 0.3s; }
+        .container {
+            background: #fff; padding: 20px 15px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            width: 100%; max-width: 400px;
+        }
+        h1 { text-align: center; color: #1a1a1a; margin: 0 0 20px 0; font-size: 1.5em; }
+        
+        /* 入力エリアをGridレイアウトでコンパクトに */
+        .input-grid {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 12px;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .input-grid label {
+            font-weight: normal; color: #333; margin: 0;
+        }
+        .input-grid select, .input-grid input {
+            width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 8px; font-size: 1em; box-sizing: border-box;
+        }
+        .input-grid .custom-input {
+            grid-column: 1 / -1; /* 横幅いっぱいに広げる */
+            display: none;
+        }
+
+        #result-speed {
+            font-size: 1.8em; font-weight: bold; color: var(--accent-color); text-align: center; margin: 15px 0 10px 0;
+            padding: 10px 0; border-top: 1px solid #eee; border-bottom: 1px solid #eee;
+        }
+
+        .timer-section { text-align: center; display: none; }
+        #timer-display { font-size: 3em; font-weight: bold; color: var(--success-color); margin-bottom: 10px; letter-spacing: 2px; }
+        
+        .timer-settings { margin-bottom: 10px; }
+        .timer-settings label { display: inline-flex; align-items: center; cursor: pointer; font-weight: normal; color: #555; }
+        
+        .timer-controls { display: flex; justify-content: space-between; }
+        .timer-controls button {
+            flex-grow: 1; padding: 12px 10px; font-size: 1em; margin: 0 4px; cursor: pointer;
+            border-radius: 8px; border: none; color: white; transition: opacity 0.2s;
+        }
         .timer-controls button:active { opacity: 0.7; }
         #start-timer { background-color: var(--success-color); }
         #stop-timer { background-color: var(--danger-color); }
         #reset-timer { background-color: #6c757d; }
-        #network-warning { display: none; background-color: #fff3cd; color: #856404; border: 1px solid #ffeeba; padding: 10px; border-radius: 5px; margin-bottom: 15px; text-align: center; }
+
+        #network-warning { display: none; background-color: #fff3cd; color: #856404; border: 1px solid #ffeeba; padding: 10px; border-radius: 5px; margin-bottom: 15px; text-align: center; font-size: 0.9em;}
     </style>
 </head>
 <body>
 
 <div class="container">
     <div id="network-warning">キャッシュ作成のため通信中です。完了後はオフラインで利用できます。</div>
-    <h1>📷 NDフィルタータイマー</h1>
+    <h1>📷 ND Filter Timer</h1>
 
-    <div class="input-group">
-        <label for="base-speed-select">NDなしのシャッタースピード</label>
+    <div class="input-grid">
+        <label for="base-speed-select">NDなし</label>
         <select id="base-speed-select">
             <option value="0.000125">1/8000</option>
             <option value="0.00025">1/4000</option>
-            <option value="0.0005">1/2000</option>
-            <option value="0.001">1/1000</option>
             <option value="0.002">1/500</option>
-            <option value="0.004">1/250</option>
             <option value="0.008">1/125</option>
             <option value="0.01666">1/60</option>
-            <option value="0.03333">1/30</option>
             <option value="0.06666">1/15</option>
-            <option value="0.125">1/8</option>
-            <option value="0.25">1/4</option>
             <option value="0.5">1/2</option>
             <option value="1">1秒</option>
-            <option value="2">2秒</option>
             <option value="custom">カスタム</option>
         </select>
-        <input type="text" id="custom-speed-input" placeholder="例: 1/100, 15 など" style="display:none; margin-top:10px;">
-    </div>
+        <input type="text" id="custom-speed-input" class="custom-input" placeholder="例: 1/100, 15 など">
 
-    <div class="input-group">
         <label for="nd-filter">NDフィルター</label>
         <select id="nd-filter">
             <option value="1000" selected>ND1000</option>
             <option value="500">ND500</option>
-            <option value="256">ND256</option>
-            <option value="128">ND128</option>
             <option value="64">ND64</option>
-            <option value="32">ND32</option>
-            <option value="16">ND16</option>
             <option value="8">ND8</option>
-            <option value="4">ND4</option>
-            <option value="2">ND2</option>
             <option value="custom">カスタム</option>
         </select>
-        <input type="text" id="custom-nd-value" placeholder="例: 8x64" style="display:none; margin-top:10px;">
+        <input type="text" id="custom-nd-value" class="custom-input" placeholder="例: 8x64">
     </div>
 
-    <div class="result-section">
-        <p class="result-title">フィルター装着後の露光時間:</p>
-        <p id="result-speed">-</p>
-    </div>
+    <div id="result-speed">-</div>
 
-    <div id="timer-container" class="timer-section" style="display:none;">
+    <div id="timer-container" class="timer-section">
         <div id="timer-display">0.0</div>
         <div class="timer-settings">
-            <label><input type="checkbox" id="sound-toggle" checked> 終了時に音を鳴らす</label>
+            <label><input type="checkbox" id="sound-toggle" checked> 終了音</label>
         </div>
         <div class="timer-controls">
             <button id="start-timer">スタート</button>
@@ -114,156 +129,89 @@
     const resetTimerBtn = document.getElementById('reset-timer');
     const networkWarning = document.getElementById('network-warning');
 
-    let totalSeconds = 0;
-    let timerInterval = null;
-    let remainingSeconds = 0;
-    let audioContext = null;
+    let totalSeconds = 0, timerInterval = null, remainingSeconds = 0, audioContext = null;
 
-    // --- サウンド機能 ---
     function initAudioContext() {
         if (!audioContext) {
             try {
                 audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                // 空の音を再生してコンテキストを有効化
                 const buffer = audioContext.createBuffer(1, 1, 22050);
                 const source = audioContext.createBufferSource();
-                source.buffer = buffer;
-                source.connect(audioContext.destination);
-                source.start(0);
-            } catch (e) {
-                console.error("Web Audio API is not supported.");
-            }
+                source.buffer = buffer; source.connect(audioContext.destination); source.start(0);
+            } catch (e) { console.error("Web Audio API not supported."); }
         }
-        if (audioContext && audioContext.state === 'suspended') {
-            audioContext.resume();
-        }
+        if (audioContext && audioContext.state === 'suspended') audioContext.resume();
     }
-
     function playBeep() {
         if (!audioContext) return;
-        const oscillator = audioContext.createOscillator();
-        const gainNode = audioContext.createGain();
-        oscillator.connect(gainNode);
-        gainNode.connect(audioContext.destination);
-        oscillator.type = 'sine';
-        oscillator.frequency.value = 880;
-        gainNode.gain.setValueAtTime(0, audioContext.currentTime);
-        gainNode.gain.linearRampToValueAtTime(1, audioContext.currentTime + 0.02);
-        oscillator.start(audioContext.currentTime);
-        gainNode.gain.linearRampToValueAtTime(0, audioContext.currentTime + 0.3);
-        oscillator.stop(audioContext.currentTime + 0.3);
+        const o = audioContext.createOscillator(), g = audioContext.createGain();
+        o.connect(g); g.connect(audioContext.destination); o.type = 'sine';
+        o.frequency.value = 880; g.gain.setValueAtTime(0, audioContext.currentTime);
+        g.gain.linearRampToValueAtTime(1, audioContext.currentTime + 0.02); o.start(audioContext.currentTime);
+        g.gain.linearRampToValueAtTime(0, audioContext.currentTime + 0.3); o.stop(audioContext.currentTime + 0.3);
     }
-
-    // --- 計算ロジック ---
     function performCalculation() {
         stopTimer();
         let baseSpeedSec;
         if (baseSpeedSelect.value === 'custom') {
-            const baseSpeedStr = customSpeedInput.value;
-            if (baseSpeedStr.includes('/')) {
-                const parts = baseSpeedStr.split('/');
-                baseSpeedSec = parseFloat(parts[0]) / parseFloat(parts[1]);
-            } else {
-                baseSpeedSec = parseFloat(baseSpeedStr);
-            }
-        } else {
-            baseSpeedSec = parseFloat(baseSpeedSelect.value);
-        }
-
+            const str = customSpeedInput.value;
+            baseSpeedSec = str.includes('/') ? parseFloat(str.split('/')[0]) / parseFloat(str.split('/')[1]) : parseFloat(str);
+        } else { baseSpeedSec = parseFloat(baseSpeedSelect.value); }
         let ndFactor;
         if (ndFilterSelect.value === 'custom') {
-            const customStr = customNdInput.value.toLowerCase();
-            ndFactor = customStr.includes('x') ? customStr.split('x').reduce((acc, val) => acc * parseFloat(val), 1) : parseFloat(customStr);
-        } else {
-            ndFactor = parseFloat(ndFilterSelect.value);
-        }
-
+            const str = customNdInput.value.toLowerCase();
+            ndFactor = str.includes('x') ? str.split('x').reduce((acc, val) => acc * parseFloat(val), 1) : parseFloat(str);
+        } else { ndFactor = parseFloat(ndFilterSelect.value); }
         if (isNaN(baseSpeedSec) || isNaN(ndFactor) || baseSpeedSec <= 0 || ndFactor <= 0) {
-            resultSpeedEl.textContent = "-";
-            timerContainer.style.display = 'none';
-            return;
+            resultSpeedEl.textContent = "-"; timerContainer.style.display = 'none'; return;
         }
-
         totalSeconds = baseSpeedSec * ndFactor;
-        displayResult(totalSeconds);
-        setupTimer(totalSeconds);
+        if (totalSeconds < 1) {
+            const frac = 1 / totalSeconds, roundFrac = Math.round(frac);
+            resultSpeedEl.textContent = (Math.abs(frac - roundFrac) < 0.01 && roundFrac > 0) ? `1/${roundFrac} 秒` : `${totalSeconds.toFixed(2)} 秒`;
+        } else { resultSpeedEl.textContent = `${totalSeconds.toFixed(1)} 秒`; }
+        if (totalSeconds >= 1) {
+            remainingSeconds = totalSeconds;
+            timerDisplay.textContent = totalSeconds.toFixed(1); timerContainer.style.display = 'block';
+        } else { timerContainer.style.display = 'none'; }
     }
-
-    function displayResult(seconds) {
-        if (seconds < 1) {
-            const fraction = 1 / seconds;
-            const roundedFraction = Math.round(fraction);
-            resultSpeedEl.textContent = (Math.abs(fraction - roundedFraction) < 0.01 && roundedFraction > 0) ? `1/${roundedFraction} 秒` : `${seconds.toFixed(3)} 秒`;
-        } else {
-            resultSpeedEl.textContent = `${seconds.toFixed(1)} 秒`;
-        }
-    }
-
-    // --- タイマー制御 ---
-    function setupTimer(seconds) {
-        if (seconds >= 1) {
-            remainingSeconds = seconds;
-            timerDisplay.textContent = seconds.toFixed(1);
-            timerContainer.style.display = 'block';
-        } else {
-            timerContainer.style.display = 'none';
-        }
-    }
-    
     function startTimer() {
         if (timerInterval || remainingSeconds <= 0) return;
-        initAudioContext(); // 音の準備だけ行う
+        initAudioContext();
         const endTime = Date.now() + remainingSeconds * 1000;
         timerInterval = setInterval(() => {
             const newRemaining = (endTime - Date.now()) / 1000;
             if (newRemaining <= 0) {
-                stopTimer();
-                timerDisplay.textContent = "0.0";
+                stopTimer(); timerDisplay.textContent = "0.0";
                 if (soundToggle.checked) playBeep();
                 setTimeout(() => alert("タイマーが終了しました！"), 100);
-            } else {
-                remainingSeconds = newRemaining;
-                timerDisplay.textContent = newRemaining.toFixed(1);
-            }
+            } else { remainingSeconds = newRemaining; timerDisplay.textContent = newRemaining.toFixed(1); }
         }, 100);
     }
     function stopTimer() { clearInterval(timerInterval); timerInterval = null; }
-    function resetTimer() { stopTimer(); setupTimer(totalSeconds); }
+    function resetTimer() { stopTimer(); if (totalSeconds >= 1) { remainingSeconds = totalSeconds; timerDisplay.textContent = totalSeconds.toFixed(1); } }
 
-    // --- イベントリスナー ---
     [baseSpeedSelect, customSpeedInput, ndFilterSelect, customNdInput].forEach(el => {
         el.addEventListener('change', performCalculation);
         el.addEventListener('input', performCalculation);
     });
-
-    baseSpeedSelect.addEventListener('change', () => {
-        customSpeedInput.style.display = (baseSpeedSelect.value === 'custom') ? 'block' : 'none';
-    });
-    ndFilterSelect.addEventListener('change', () => {
-        customNdInput.style.display = (ndFilterSelect.value === 'custom') ? 'block' : 'none';
-    });
+    baseSpeedSelect.addEventListener('change', () => { customSpeedInput.style.display = baseSpeedSelect.value === 'custom' ? 'block' : 'none'; });
+    ndFilterSelect.addEventListener('change', () => { customNdInput.style.display = ndFilterSelect.value === 'custom' ? 'block' : 'none'; });
     
     startTimerBtn.addEventListener('click', startTimer);
     stopTimerBtn.addEventListener('click', stopTimer);
     resetTimerBtn.addEventListener('click', resetTimer);
 
-    // --- PWA & Service Worker ---
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
-            navigator.serviceWorker.register('./sw.js')
-                .then(reg => console.log('Service worker registered.', reg))
-                .catch(err => console.log('Service worker registration failed:', err));
+            navigator.serviceWorker.register('./sw.js').catch(err => console.log('Service worker registration failed:', err));
         });
-
         navigator.serviceWorker.addEventListener('message', event => {
             if (event.data && event.data.type === 'NETWORK_ACCESS') {
-                networkWarning.style.display = 'block';
-                setTimeout(() => { networkWarning.style.display = 'none'; }, 4000);
+                networkWarning.style.display = 'block'; setTimeout(() => { networkWarning.style.display = 'none'; }, 4000);
             }
         });
     }
-
-    // 初期計算
     performCalculation();
 </script>
 
