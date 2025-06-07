@@ -1,18 +1,19 @@
 {
-  "name": "My Offline App",
-  "short_name": "OfflineApp",
-  "start_url": "./index.html",
+  "name": "NDフィルタータイマー",
+  "short_name": "NDタイマー",
+  "start_url": ".",
   "display": "standalone",
   "background_color": "#ffffff",
-  "theme_color": "#007aff",
+  "theme_color": "#007bff",
+  "description": "NDフィルター使用時のシャッタースピード計算と連動タイマー",
   "icons": [
     {
-      "src": "icon-192.png",
+      "src": "icon-192x192.png",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "icon-512.png",
+      "src": "icon-512x512.png",
       "sizes": "512x512",
       "type": "image/png"
     }
