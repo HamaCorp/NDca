@@ -5,110 +5,98 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>NDタイマー</title>
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="NDタイマー">
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="icon-192x192.png">
 
     <style>
-        :root { --accent-color: #007bff; --success-color: #28a745; --danger-color: #dc3545; }
+        :root {
+            --bg-color: #121212;
+            --surface-color: #1e1e1e;
+            --primary-text-color: #e0e0e0;
+            --secondary-text-color: #a0a0a0;
+            --border-color: #333;
+            --accent-color: #2979ff;
+            --success-color: #00e676;
+        }
         html, body { height: 100%; }
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            line-height: 1.5; color: #333; background-color: #f0f2f5; margin: 0;
+            line-height: 1.5; color: var(--primary-text-color); background-color: var(--bg-color); margin: 0;
             display: flex; justify-content: center; align-items: center; padding: 10px; box-sizing: border-box;
         }
         .container {
-            background: #fff; padding: 20px 15px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            width: 100%; max-width: 400px;
+            background: var(--surface-color); padding: 20px; border-radius: 16px; border: 1px solid var(--border-color);
+            width: 100%; max-width: 420px; display: flex; flex-direction: column; gap: 18px;
         }
-        h1 { text-align: center; color: #1a1a1a; margin: 0 0 20px 0; font-size: 1.5em; }
+        h1 { text-align: center; color: var(--primary-text-color); margin: 0; font-size: 1.5em; font-weight: 600; }
         
-        /* 入力エリアをGridレイアウトでコンパクトに */
-        .input-grid {
-            display: grid;
-            grid-template-columns: auto 1fr;
-            gap: 12px;
-            align-items: center;
-            margin-bottom: 15px;
+        .input-container { display: flex; gap: 15px; }
+        .input-column { flex: 1; display: flex; flex-direction: column; gap: 8px; }
+        .input-column label { font-weight: 500; color: var(--secondary-text-color); font-size: 0.9em; padding-left: 4px;}
+        .input-column select, .input-column input {
+            width: 100%; padding: 12px; background: #333; color: var(--primary-text-color);
+            border: 1px solid #444; border-radius: 8px; font-size: 1em; box-sizing: border-box;
+            -webkit-appearance: none; -moz-appearance: none; appearance: none;
+            background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23a0a0a0%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E');
+            background-repeat: no-repeat; background-position: right 12px center; background-size: 10px;
         }
-        .input-grid label {
-            font-weight: normal; color: #333; margin: 0;
-        }
-        .input-grid select, .input-grid input {
-            width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 8px; font-size: 1em; box-sizing: border-box;
-        }
-        .input-grid .custom-input {
-            grid-column: 1 / -1; /* 横幅いっぱいに広げる */
-            display: none;
-        }
+        .custom-input { display: none; }
 
         #result-speed {
-            font-size: 1.8em; font-weight: bold; color: var(--accent-color); text-align: center; margin: 15px 0 10px 0;
-            padding: 10px 0; border-top: 1px solid #eee; border-bottom: 1px solid #eee;
+            font-size: 2em; font-weight: 600; color: var(--accent-color); text-align: center;
+            padding: 12px 0; border-top: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color);
         }
 
-        .timer-section { text-align: center; display: none; }
-        #timer-display { font-size: 3em; font-weight: bold; color: var(--success-color); margin-bottom: 10px; letter-spacing: 2px; }
+        .timer-section { text-align: center; display: none; display: flex; flex-direction: column; gap: 15px;}
+        #timer-display { font-size: 3.2em; font-weight: 600; color: var(--success-color); letter-spacing: 2px; }
         
-        .timer-settings { margin-bottom: 10px; }
-        .timer-settings label { display: inline-flex; align-items: center; cursor: pointer; font-weight: normal; color: #555; }
-        
-        .timer-controls { display: flex; justify-content: space-between; }
+        .timer-controls { display: flex; justify-content: space-around; gap: 15px; align-items: center; }
         .timer-controls button {
-            flex-grow: 1; padding: 12px 10px; font-size: 1em; margin: 0 4px; cursor: pointer;
-            border-radius: 8px; border: none; color: white; transition: opacity 0.2s;
+            flex-grow: 1; padding: 14px 10px; font-size: 1.1em; font-weight: 600; cursor: pointer;
+            border-radius: 8px; border: none; color: white; transition: transform 0.1s, opacity 0.2s;
         }
-        .timer-controls button:active { opacity: 0.7; }
-        #start-timer { background-color: var(--success-color); }
-        #stop-timer { background-color: var(--danger-color); }
+        .timer-controls button:active { transform: scale(0.97); }
+        #start-timer { background-color: var(--accent-color); }
         #reset-timer { background-color: #6c757d; }
-
-        #network-warning { display: none; background-color: #fff3cd; color: #856404; border: 1px solid #ffeeba; padding: 10px; border-radius: 5px; margin-bottom: 15px; text-align: center; font-size: 0.9em;}
+        .timer-settings label { display: flex; align-items: center; cursor: pointer; color: var(--secondary-text-color); font-size: 0.9em; }
+        
+        #network-warning { display: none; background: #332b00; color: #ffeb99; border: 1px solid #856404; padding: 10px; border-radius: 5px; text-align: center; font-size: 0.9em;}
     </style>
 </head>
 <body>
 
 <div class="container">
     <div id="network-warning">キャッシュ作成のため通信中です。完了後はオフラインで利用できます。</div>
-    <h1>📷 ND Filter Timer</h1>
+    <h1>ND Filter Timer</h1>
 
-    <div class="input-grid">
-        <label for="base-speed-select">NDなし</label>
-        <select id="base-speed-select">
-            <option value="0.000125">1/8000</option>
-            <option value="0.00025">1/4000</option>
-            <option value="0.002">1/500</option>
-            <option value="0.008">1/125</option>
-            <option value="0.01666">1/60</option>
-            <option value="0.06666">1/15</option>
-            <option value="0.5">1/2</option>
-            <option value="1">1秒</option>
-            <option value="custom">カスタム</option>
-        </select>
-        <input type="text" id="custom-speed-input" class="custom-input" placeholder="例: 1/100, 15 など">
-
-        <label for="nd-filter">NDフィルター</label>
-        <select id="nd-filter">
-            <option value="1000" selected>ND1000</option>
-            <option value="500">ND500</option>
-            <option value="64">ND64</option>
-            <option value="8">ND8</option>
-            <option value="custom">カスタム</option>
-        </select>
-        <input type="text" id="custom-nd-value" class="custom-input" placeholder="例: 8x64">
+    <div class="input-container">
+        <div class="input-column">
+            <label for="base-speed-select">シャッター速度</label>
+            <select id="base-speed-select">
+                <option value="0.000125">1/8000</option><option value="0.00025">1/4000</option><option value="0.0005">1/2000</option><option value="0.001">1/1000</option><option value="0.002">1/500</option><option value="0.004">1/250</option><option value="0.008">1/125</option><option value="0.01666">1/60</option><option value="0.03333">1/30</option><option value="0.06666">1/15</option><option value="0.125">1/8</option><option value="0.25">1/4</option><option value="0.5">1/2</option><option value="1">1秒</option><option value="2">2秒</option><option value="custom">カスタム</option>
+            </select>
+            <input type="text" id="custom-speed-input" class="custom-input" placeholder="例: 1/100, 15">
+        </div>
+        <div class="input-column">
+            <label for="nd-filter">NDフィルター</label>
+            <select id="nd-filter">
+                <option value="1000" selected>ND1000</option><option value="500">ND500</option><option value="256">ND256</option><option value="128">ND128</option><option value="64">ND64</option><option value="32">ND32</option><option value="16">ND16</option><option value="8">ND8</option><option value="4">ND4</option><option value="2">ND2</option><option value="custom">カスタム</option>
+            </select>
+            <input type="text" id="custom-nd-value" class="custom-input" placeholder="例: 8x64">
+        </div>
     </div>
 
     <div id="result-speed">-</div>
 
     <div id="timer-container" class="timer-section">
         <div id="timer-display">0.0</div>
-        <div class="timer-settings">
-            <label><input type="checkbox" id="sound-toggle" checked> 終了音</label>
-        </div>
         <div class="timer-controls">
+            <div class="timer-settings">
+                <label><input type="checkbox" id="sound-toggle" checked> 終了音</label>
+            </div>
             <button id="start-timer">スタート</button>
-            <button id="stop-timer">ストップ</button>
             <button id="reset-timer">リセット</button>
         </div>
     </div>
@@ -116,20 +104,14 @@
 
 <script>
     // DOM要素
-    const baseSpeedSelect = document.getElementById('base-speed-select');
-    const customSpeedInput = document.getElementById('custom-speed-input');
-    const ndFilterSelect = document.getElementById('nd-filter');
-    const customNdInput = document.getElementById('custom-nd-value');
-    const resultSpeedEl = document.getElementById('result-speed');
-    const timerContainer = document.getElementById('timer-container');
-    const timerDisplay = document.getElementById('timer-display');
-    const soundToggle = document.getElementById('sound-toggle');
-    const startTimerBtn = document.getElementById('start-timer');
-    const stopTimerBtn = document.getElementById('stop-timer');
-    const resetTimerBtn = document.getElementById('reset-timer');
-    const networkWarning = document.getElementById('network-warning');
+    const selSpeed = document.getElementById('base-speed-select'), inputCustomSpeed = document.getElementById('custom-speed-input');
+    const selNd = document.getElementById('nd-filter'), inputCustomNd = document.getElementById('custom-nd-value');
+    const elResult = document.getElementById('result-speed'), elTimerContainer = document.getElementById('timer-container');
+    const elTimerDisplay = document.getElementById('timer-display'), toggleSound = document.getElementById('sound-toggle');
+    const btnStart = document.getElementById('start-timer'), btnReset = document.getElementById('reset-timer');
+    const elNetworkWarning = document.getElementById('network-warning');
 
-    let totalSeconds = 0, timerInterval = null, remainingSeconds = 0, audioContext = null;
+    let totalSeconds = 0, timerInterval = null, audioContext = null;
 
     function initAudioContext() {
         if (!audioContext) {
@@ -140,79 +122,75 @@
                 source.buffer = buffer; source.connect(audioContext.destination); source.start(0);
             } catch (e) { console.error("Web Audio API not supported."); }
         }
-        if (audioContext && audioContext.state === 'suspended') audioContext.resume();
+        if (audioContext?.state === 'suspended') audioContext.resume();
     }
     function playBeep() {
         if (!audioContext) return;
         const o = audioContext.createOscillator(), g = audioContext.createGain();
         o.connect(g); g.connect(audioContext.destination); o.type = 'sine';
         o.frequency.value = 880; g.gain.setValueAtTime(0, audioContext.currentTime);
-        g.gain.linearRampToValueAtTime(1, audioContext.currentTime + 0.02); o.start(audioContext.currentTime);
+        g.gain.linearRampToValueAtTime(1, audioContext.currentTime + 0.02); o.start();
         g.gain.linearRampToValueAtTime(0, audioContext.currentTime + 0.3); o.stop(audioContext.currentTime + 0.3);
     }
-    function performCalculation() {
-        stopTimer();
+    function calculate() {
+        clearInterval(timerInterval); timerInterval = null;
         let baseSpeedSec;
-        if (baseSpeedSelect.value === 'custom') {
-            const str = customSpeedInput.value;
+        if (selSpeed.value === 'custom') {
+            const str = inputCustomSpeed.value;
             baseSpeedSec = str.includes('/') ? parseFloat(str.split('/')[0]) / parseFloat(str.split('/')[1]) : parseFloat(str);
-        } else { baseSpeedSec = parseFloat(baseSpeedSelect.value); }
+        } else { baseSpeedSec = parseFloat(selSpeed.value); }
         let ndFactor;
-        if (ndFilterSelect.value === 'custom') {
-            const str = customNdInput.value.toLowerCase();
+        if (selNd.value === 'custom') {
+            const str = inputCustomNd.value.toLowerCase();
             ndFactor = str.includes('x') ? str.split('x').reduce((acc, val) => acc * parseFloat(val), 1) : parseFloat(str);
-        } else { ndFactor = parseFloat(ndFilterSelect.value); }
+        } else { ndFactor = parseFloat(selNd.value); }
+
         if (isNaN(baseSpeedSec) || isNaN(ndFactor) || baseSpeedSec <= 0 || ndFactor <= 0) {
-            resultSpeedEl.textContent = "-"; timerContainer.style.display = 'none'; return;
+            elResult.textContent = "-"; elTimerContainer.style.display = 'none'; return;
         }
         totalSeconds = baseSpeedSec * ndFactor;
         if (totalSeconds < 1) {
             const frac = 1 / totalSeconds, roundFrac = Math.round(frac);
-            resultSpeedEl.textContent = (Math.abs(frac - roundFrac) < 0.01 && roundFrac > 0) ? `1/${roundFrac} 秒` : `${totalSeconds.toFixed(2)} 秒`;
-        } else { resultSpeedEl.textContent = `${totalSeconds.toFixed(1)} 秒`; }
+            elResult.textContent = (Math.abs(frac - roundFrac) < 0.01 && roundFrac > 0) ? `1/${roundFrac} 秒` : `${totalSeconds.toFixed(2)} 秒`;
+        } else { elResult.textContent = `${totalSeconds.toFixed(1)} 秒`; }
+        resetTimerDisplay();
+    }
+    function resetTimerDisplay() {
+        clearInterval(timerInterval); timerInterval = null;
         if (totalSeconds >= 1) {
-            remainingSeconds = totalSeconds;
-            timerDisplay.textContent = totalSeconds.toFixed(1); timerContainer.style.display = 'block';
-        } else { timerContainer.style.display = 'none'; }
+            elTimerDisplay.textContent = totalSeconds.toFixed(1); elTimerContainer.style.display = 'flex';
+        } else { elTimerContainer.style.display = 'none'; }
     }
     function startTimer() {
-        if (timerInterval || remainingSeconds <= 0) return;
+        if (timerInterval || totalSeconds < 1) return;
         initAudioContext();
+        let remainingSeconds = totalSeconds;
         const endTime = Date.now() + remainingSeconds * 1000;
         timerInterval = setInterval(() => {
             const newRemaining = (endTime - Date.now()) / 1000;
             if (newRemaining <= 0) {
-                stopTimer(); timerDisplay.textContent = "0.0";
-                if (soundToggle.checked) playBeep();
-                setTimeout(() => alert("タイマーが終了しました！"), 100);
-            } else { remainingSeconds = newRemaining; timerDisplay.textContent = newRemaining.toFixed(1); }
+                if (toggleSound.checked) playBeep();
+                resetTimerDisplay(); // タイマー終了時にリセット
+            } else {
+                elTimerDisplay.textContent = newRemaining.toFixed(1);
+            }
         }, 100);
     }
-    function stopTimer() { clearInterval(timerInterval); timerInterval = null; }
-    function resetTimer() { stopTimer(); if (totalSeconds >= 1) { remainingSeconds = totalSeconds; timerDisplay.textContent = totalSeconds.toFixed(1); } }
-
-    [baseSpeedSelect, customSpeedInput, ndFilterSelect, customNdInput].forEach(el => {
-        el.addEventListener('change', performCalculation);
-        el.addEventListener('input', performCalculation);
-    });
-    baseSpeedSelect.addEventListener('change', () => { customSpeedInput.style.display = baseSpeedSelect.value === 'custom' ? 'block' : 'none'; });
-    ndFilterSelect.addEventListener('change', () => { customNdInput.style.display = ndFilterSelect.value === 'custom' ? 'block' : 'none'; });
-    
-    startTimerBtn.addEventListener('click', startTimer);
-    stopTimerBtn.addEventListener('click', stopTimer);
-    resetTimerBtn.addEventListener('click', resetTimer);
+    [selSpeed, inputCustomSpeed, selNd, inputCustomNd].forEach(el => { el.addEventListener('input', calculate); });
+    selSpeed.addEventListener('change', () => { inputCustomSpeed.style.display = selSpeed.value === 'custom' ? 'block' : 'none'; calculate(); });
+    selNd.addEventListener('change', () => { inputCustomNd.style.display = selNd.value === 'custom' ? 'block' : 'none'; calculate(); });
+    btnStart.addEventListener('click', startTimer);
+    btnReset.addEventListener('click', resetTimerDisplay);
 
     if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-            navigator.serviceWorker.register('./sw.js').catch(err => console.log('Service worker registration failed:', err));
-        });
-        navigator.serviceWorker.addEventListener('message', event => {
-            if (event.data && event.data.type === 'NETWORK_ACCESS') {
-                networkWarning.style.display = 'block'; setTimeout(() => { networkWarning.style.display = 'none'; }, 4000);
+        window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js').catch(err => console.log(err)); });
+        navigator.serviceWorker.addEventListener('message', e => {
+            if (e.data?.type === 'NETWORK_ACCESS') {
+                elNetworkWarning.style.display = 'block'; setTimeout(() => { elNetworkWarning.style.display = 'none'; }, 4000);
             }
         });
     }
-    performCalculation();
+    calculate();
 </script>
 
 </body>
